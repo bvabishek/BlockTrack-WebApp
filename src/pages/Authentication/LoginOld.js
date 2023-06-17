@@ -1,8 +1,7 @@
-import PropTypes from "prop-types"
-import React, { useState } from "react"
-
-import storage from "services/Storage"
-import api from "services/Api"
+import PropTypes from "prop-types";
+import React, { useState, useEffect} from "react";
+import storage from "services/Storage";
+import api from "services/Api";
 
 
 import {
@@ -16,27 +15,33 @@ import {
   Input,
   FormFeedback,
   Label,
-} from "reactstrap"
+} from "reactstrap";
 
 //redux
-import { useSelector, useDispatch } from "react-redux"
+import { useSelector, useDispatch } from "react-redux";
 
-import { withRouter, Link } from "react-router-dom"
+import { withRouter, Link , useHistory} from "react-router-dom";
+import { toast, Toaster } from "react-hot-toast";
+
 
 // Formik validation
-import * as Yup from "yup"
-import { useFormik } from "formik"
+import * as Yup from "yup";
+import { useFormik } from "formik";
 
 //Social Media Imports
-import { GoogleLogin } from "react-google-login"
+import { GoogleLogin } from "react-google-login";
 // import TwitterLogin from "react-twitter-auth"
-import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props"
+import FacebookLogin from "react-facebook-login/dist/facebook-login-render-props";
 
 // actions
-import { loginUser, socialLogin } from "../../store/actions"
+import { loginUser } from "store/actions";
+import { LOGIN_SUCCESS } from "store/auth/login/actionTypes";
 
 //Import config
-import { facebook, google } from "../../config"
+import { facebook, google } from "../../config";
+import fakeBackend from "helpers/AuthType/fakeBackend";
+import Sidebar from "components/VerticalLayout/Sidebar";
+import { setRoleName } from "store_1/authslice";
 // import api from "services/Api"
 
 const Login = props => {
@@ -44,17 +49,17 @@ const Login = props => {
   document.title = "Login | BlockTrack"
 
   const dispatch = useDispatch()
-
-  // const [email, setEmail] = useState("")
-  // const [password, setPassword] = useState("")
+  const [creds, setCreds] = useState(null);
+  const [userData, setUserData] = useState('');
+  console.log(userData,"ussserr")
 
   const validation = useFormik({
     // enableReinitialize : use this flag when initial values needs to be changed
     enableReinitialize: false,
 
     initialValues: {
-      email: "admin@themesbrand.com" || "",
-      password: "123456" || "",
+      email: "",
+      password: ""
     },
     validationSchema: Yup.object({
       email: Yup.string().required("Please Enter Your Username / Email"),
@@ -62,81 +67,112 @@ const Login = props => {
     }),
     onSubmit: values => {
       dispatch(loginUser(values, props.history))
+      // console.log(values,'values')
+      onLoginUser(values)
+      setCreds(values)
     },
-  })
+  });
+
+
+  const history = useHistory();
+
+  const onLoginUser = async (values) => {
+    try {
+      console.log("onLoginUser called");
+      const response = await api.getRoleBased(values.email);
+      const data = response.data[0].role_name;
+      const updatedData = data; // Store the data in a separate variable
+      console.log(updatedData, 'updateddata');
+      setUserData(updatedData);
+      console.log(userData, 'userdataaaa')
+      // <Sidebar userRole={updatedData} />
+      // dispatch(setRoleName(updatedData))
+  
+      if (updatedData === "Doctor") {
+        dispatch({ type: LOGIN_SUCCESS, payload: { userRole: "Doctor" } });
+        toast.success("Logged in as a Doctor", {
+          duration: 3000,
+          style: {
+            width: "300px",
+            backgroundColor: "lightblue",
+            fontSize: "15px",
+          },
+        });
+      } else if (updatedData === "Super Admin") {
+        dispatch({ type: LOGIN_SUCCESS, payload: { userRole: "Super Admin" } });
+        toast.success("Logged in as a Super Admin", {
+          duration: 3000,
+          style: {
+            width: "300px",
+            backgroundColor: "lightblue",
+            fontSize: "15px",
+          },
+        });
+      }
+  
+      await handleVerify(values);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  
+
+  useEffect(() => {
+    if (userData !== null) {
+      console.log(userData, "data here new");
+    }
+  }, [userData]);
+  
+
+const handleVerify = async(values) => {
+  try {
+    const response = await api.postAuthUsers(values);
+    console.log(values, 'values');
+    console.log(response);
+    fakeBackend(values.email, values.password)
+    
+    
+    // Check if the response status is 200
+    if (response.status === 200) {
+      dispatch(setRoleName(userData))       
+      // Authentication successful, navigate to the dashboard page
+      history.push("/dashboard");
+    } else {
+      // Handle other response statuses if needed
+    }
+  } catch (error) {
+    console.error(error);
+    // Handle the error and display appropriate message   
+  }
+}
 
   const { error } = useSelector(state => ({
     error: state.Login.error,
-  }))
-
-  function onLoginUser() {
-    api.postLogin().then(res => {
-      console.log(res.data)
-      console.log(res.data[0])
-      console.log(res.data[0].access_token)
-      const accessToken = res.data[0].access_token
-      const refreshToken = res.data[0].refresh_token
-      storage.storeTokens(accessToken, refreshToken)
-    })
-  }
-
-  // const signIn = (res, type) => {
-  //   if (type === "google" && res) {
-  //     const postData = {
-  //       name: res.profileObj.name,
-  //       email: res.profileObj.email,
-  //       token: res.tokenObj.access_token,
-  //       idToken: res.tokenId,
-  //     };
-  //     dispatch(socialLogin(postData, props.history, type));
-  //   } else if (type === "facebook" && res) {
-  //     const postData = {
-  //       name: res.name,
-  //       email: res.email,
-  //       token: res.accessToken,
-  //       idToken: res.tokenId,
-  //     };
-  //     dispatch(socialLogin(postData, props.history, type));
-  //   }
-  // };
-
-  // function postLoginUser() {
-  //   api.postLogin(
-  //     {
-  //       email,
-  //       password,
-  //     },
-  //     { withCredentials: true }
-  //   )
-  //   console.log(postLoginUser.data)
-  // }
+    
+  }));
 
 
-  // function onLogin(){
-  //   storage.setData({
-  //     email,
-  //     password,
-  //     token
-  //   })
-
-  //   storage.getData()
-  // }
-
-  //handleGoogleLoginResponse
   const googleResponse = response => {
     signIn(response, "google")
-  }
+  };
 
-  //handleTwitterLoginResponse
-  // const twitterResponse = e => {}
-
-  //handleFacebookLoginResponse
   const facebookResponse = response => {
     signIn(response, "facebook")
-  }
+  };
+
+  const handleFormSubmit = async (values) => {
+    try {
+      validation.handleSubmit();
+      await onLoginUser(values);
+      await handleVerify(values);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   return (
     <React.Fragment>
+    {/* <Sidebar props={userData}/> */}
       <div className="home-btn d-none d-sm-block">
         <Link to="/" className="text-dark">
           <i className="bx bx-home h2" />
@@ -144,6 +180,7 @@ const Login = props => {
       </div>
       <div className="account-pages my-5 pt-sm-5 bg-primary bg-soft">
         <Container>
+        <Toaster />
           <Row className="justify-content-center">
             <Col md={8} lg={6} xl={5}>
               <Card className="overflow-hidden">
@@ -164,19 +201,15 @@ const Login = props => {
                     </Col>
                   </Row>
                 </div>
+                
                 <CardBody className="pt-0">
                   <div></div>
                   <div className="p-3">
                     <Form
                       className="form-horizontal"
-                      onSubmit={e => {
-                        e.preventDefault()
-                        validation.handleSubmit()
-                        onLoginUser()
-                        return false
-                      }}
+                      onSubmit={validation.handleSubmit}
                     >
-                      {error ? <Alert color="danger">{error}</Alert> : null}
+                      {/* {error ? <Alert color="danger">{error}</Alert> : null} */}
 
                       <div className="mb-3">
                         <Label className="form-label">Username / Email</Label>
@@ -196,11 +229,11 @@ const Login = props => {
                               : false
                           }
                         />
-                        {validation.touched.email && validation.errors.email ? (
+                        {/* {validation.touched.email && validation.errors.email ? (
                           <FormFeedback type="invalid">
                             {validation.errors.email}
                           </FormFeedback>
-                        ) : null}
+                        ) : null} */}
                       </div>
 
                       <div className="mb-3">
@@ -220,12 +253,12 @@ const Login = props => {
                               : false
                           }
                         />
-                        {validation.touched.password &&
+                        {/* {validation.touched.password &&
                         validation.errors.password ? (
                           <FormFeedback type="invalid">
                             {validation.errors.password}
                           </FormFeedback>
-                        ) : null}
+                        ) : null} */}
                       </div>
 
                       <div className="form-check">
@@ -245,13 +278,16 @@ const Login = props => {
                       <div className="mt-3 d-grid">
                         <button
                           className="btn btn-outline-primary btn-block"
-                          type="submit"
-                          // onClick={onLogin}
+                          // type="submit"
+                          onClick={() => handleFormSubmit(validation.values)} 
                         >
                           Log In
                         </button>
+                        
                       </div>
-
+                        {/* {userData === "Doctor" && <Sidebar role="Doctor" />}
+            {userData === "Super Admin" && <Sidebar role="Super Admin" />} */}
+                      
                       <div className="mt-4 text-center">
                         <h5 className="font-size-14 mb-3">Sign in with</h5>
 
@@ -305,7 +341,10 @@ const Login = props => {
               <div className="mt-5 text-center">
                 <p>
                   Don&#39;t have an account ?{" "}
-                  <Link to="/account/register" className="fw-medium text-primary">
+                  <Link
+                    to="/account/registerstaff"
+                    className="fw-medium text-primary"
+                  >
                     {" "}
                     Signup now{" "}
                   </Link>{" "}
@@ -315,6 +354,7 @@ const Login = props => {
                   <i className="mdi text-danger" />
                 </p>
               </div>
+
             </Col>
           </Row>
         </Container>
@@ -323,8 +363,8 @@ const Login = props => {
   )
 }
 
-export default withRouter(Login)
+export default withRouter(Login);
 
 Login.propTypes = {
   history: PropTypes.object,
-}
+};

@@ -1,12 +1,12 @@
-import PropTypes from "prop-types"
-import React from "react"
-import { Container } from "reactstrap"
+import PropTypes from "prop-types";
+import React from "react";
+import { Container } from "reactstrap";
 
 //Import Breadcrumb
-import Breadcrumbs from "../../components/Common/Breadcrumb"
+import Breadcrumbs from "../../components/Common/Breadcrumb";
 
 //i18n
-import { withTranslation } from "react-i18next"
+import { withTranslation } from "react-i18next";
 
 //redux
 
@@ -23,13 +23,7 @@ const Liveconsult = props => {
         </Container>
       </div>
     </React.Fragment>
-  )
-}
+  );
+};
 
-Liveconsult.propTypes = {
-  t: PropTypes.any,
-  chartsData: PropTypes.any,
-  onGetChartsData: PropTypes.func,
-}
-
-export default withTranslation()(Liveconsult)
+export default withTranslation()(Liveconsult);

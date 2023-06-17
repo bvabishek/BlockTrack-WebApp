@@ -1,10 +1,8 @@
 // import "bootstrap/dist/css/bootstrap.min.css"
-import React from "react"
-import { useState } from "react"
-import { Navigate } from "react-router-dom"
-
-import { Link } from "react-router-dom"
-import api from "services/Api"
+import React from "react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import api from "services/Api";
 import {
   Row,
   Col,
@@ -14,20 +12,24 @@ import {
   Form,
   Input,
   Label,
-} from "reactstrap"
+} from "reactstrap";
 
-import storage from "services/Storage"
 
 function Login() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
 
-  function onLoginUser() {
-    api.postLogin().then(res => {
-      const accessToken = res.data[0].access_token
-      const refreshToken = res.data[0].refresh_token
-      storage.storeTokens(accessToken, refreshToken)
-    })
+  const initialLoginValues = {
+    email: '',
+    password: ''
+  }
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  
+  function handleFormSubmit() {
+    console.log("kkkk")
+      //for posting and getting data at a sametime
+      api.postAuthUsers(email,password).then(resp => {
+        console.log(resp)
+      })
   }
 
 
@@ -67,8 +69,7 @@ function Login() {
                       className="form-horizontal"
                       onSubmit={e => {
                         e.preventDefault()
-                        onLoginUser()
-
+                        handleFormSubmit()
                         return false
                       }}
                     >
@@ -113,7 +114,7 @@ function Login() {
                         <button
                           className="btn btn-outline-primary btn-block"
                           type="submit"
-                          
+                          onClick={()=>handleFormSubmit()}
                         >
                           Log In
                         </button>
@@ -156,14 +157,13 @@ function Login() {
               <div className="mt-5 text-center">
                 <p>
                   Don&#39;t have an account ?{" "}
-                  <Link to="/account/register" className="fw-medium text-primary">
-                    {" "}
-                    Signup now{" "}
-                  </Link>{" "}
+                  <Link to="/account/registerstaff" className="fw-medium text-primary">
+                    Signup now
+                  </Link>
                 </p>
                 <p>
                   {new Date().getFullYear()} © BlockTrack{" "}
-                  <i className="mdi text-danger" />
+                  
                 </p>
               </div>
             </Col>
@@ -174,4 +174,4 @@ function Login() {
   )
 }
 
-export default Login
+export default Login;

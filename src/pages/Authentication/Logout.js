@@ -1,12 +1,12 @@
-import PropTypes from "prop-types"
-import React, { useEffect } from "react"
+import PropTypes from "prop-types";
+import React, { useEffect } from "react";
 import { connect } from "react-redux"
-import { withRouter } from "react-router-dom"
+import { withRouter } from "react-router-dom";
 
-import { logoutUser } from "../../store/actions"
+import { logoutUser } from "../../store/actions";
 
 //redux
-import { useSelector, useDispatch } from "react-redux"
+import { useSelector, useDispatch } from "react-redux";
 
 const Logout = props => {
   const dispatch = useDispatch()
@@ -16,11 +16,11 @@ const Logout = props => {
   }, [dispatch])
 
   return <></>
-}
+};
 
 
 Logout.propTypes = {
   history: PropTypes.object,
 }
 
-export default withRouter(Logout)
+export default withRouter(Logout);

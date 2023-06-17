@@ -4,9 +4,7 @@
     "react/prop-types" : "off",
     "react/no-unescaped-entities": 0
   },
-  "extends": [
-    "plugin:react/recommended"
-  ],
+  "extends": "eslint:recommended",
   "parserOptions": {
     "ecmaVersion": 6,
     "sourceType": "module",

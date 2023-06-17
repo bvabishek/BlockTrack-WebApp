@@ -43,7 +43,9 @@ export function* watchUserRegister() {
   yield takeEvery(REGISTER_USER, registerUser)
 }
 
-function* accountSaga() {
+function* 
+
+accountSaga() {
   yield all([fork(watchUserRegister)])
 }
 

@@ -45,47 +45,77 @@ import {
   jobApply
 } from "../../common/data";
 
-let users = [
-  {
-    uid: 1,
-    username: "admin",
-    role: "admin",
-    password: "123456",
-    email: "admin@themesbrand.com",
-  },
-];
-const fakeBackend = () => {
+let users = [];
+
+const fakeBackend = async (email, password) => {
+  console.log(email, password,"lll")
   // This sets the mock adapter on the default instance
   const mock = new MockAdapter(axios, { onNoMatch: "passthrough" });
 
-  mock.onPost(url.POST_FAKE_REGISTER).reply(config => {
+  mock.onPost(url.POST_FAKE_REGISTER).reply(async (config) => {
     const user = JSON.parse(config["data"]);
-    users.push(user);
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        resolve([200, user]);
+    const existingUser = users.find((usr) => usr.email === user.email);
+    if (existingUser) {
+      // User with the same email already exists
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          reject(["User with the same email already exists"]);
+        });
       });
-    });
+      
+    } else {
+      const uid = users.length > 0 ? users[users.length - 1].uid + 1 : 1;
+      const newUser = { ...user, uid };
+      users.push(newUser);
+      return new Promise((resolve, reject) => {
+        setTimeout(() => {
+          resolve([200, newUser]);
+        });
+      });
+    }
   });
 
-  mock.onPost("/post-fake-login").reply(config => {
-    const user = JSON.parse(config["data"]);
-    const validUser = users.filter(
-      usr => usr.email === user.email && usr.password === user.password
-    );
+mock.onPost("/post-fake-login").reply(async (config) => {
+  const user = JSON.parse(config["data"]);
 
-    return new Promise((resolve, reject) => {
-      setTimeout(() => {
-        if (validUser["length"] === 1) {
-          resolve([200, validUser[0]]);
-        } else {
-          reject([
-            "Username and password are invalid. Please enter correct username and password",
-          ]);
-        }
-      });
-    });
+  // Create a new user object using the provided email and password
+  const newUser = {
+    username: user.email,
+    role: "Admin",
+    password: user.password,
+    email: user.email,
+  };
+
+  console.log(newUser, 'newuser')
+  // Check if the user already exists
+  const existingUser = users.find((usr) => usr.email === user.email);
+
+  if (!existingUser) {
+    // Generate a unique uid for the new user
+    const uid = users.length > 0 ? users[users.length - 1].uid + 1 : 1;
+    newUser.uid = uid;
+    users.push(newUser);
+  }
+
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const validUser = users.find(
+        (usr) => usr.email === user.email && usr.password === user.password
+      );
+
+      if (validUser) {
+        resolve([200, validUser]);
+      } else {
+        reject([
+          "Username and password are invalid. Please enter correct username and password",
+        ]);
+      }
+    }, 100); // Delay of 100 milliseconds
   });
+});
+
+  // Rest of the code...
+
 
   mock.onPost("/fake-forget-pwd").reply(config => {
     // User needs to check that user is eXist or not and send mail for Reset New password
@@ -156,7 +186,7 @@ const fakeBackend = () => {
 
             //Update object's name property.
             users[objIndex].username = user.username;
-
+          
             // Assign a value to locastorage
             localStorage.removeItem("authUser");
             localStorage.setItem("authUser", JSON.stringify(users[objIndex]));

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Row,
@@ -19,28 +19,28 @@ import {
   TabPane,
   TabContent,
   CardText,
-} from "reactstrap"
+} from "reactstrap";
 
-import { Link, withRouter } from "react-router-dom"
+import { Link, withRouter } from "react-router-dom";
 
-import classnames from "classnames"
+import classnames from "classnames";
 
 //Import Breadcrumb
-import Breadcrumbs from "../../../components/Common/Breadcrumb"
+import Breadcrumbs from "../../../components/Common/Breadcrumb";
 
 const UserProfile = () => {
-  const [activeTab, setactiveTab] = useState("1")
+  const [activeTab, setactiveTab] = useState("1");
   const userTabs = [
     { name: "Profile", tabId: "1" },
     { name: "Address", tabId: "2" },
     { name: "Health", tabId: "3" },
-  ]
+  ];
 
   const toggle = tab => {
     if (activeTab !== tab) {
       setactiveTab(tab)
     }
-  }
+  };
 
   return (
     <React.Fragment>
@@ -222,4 +222,4 @@ const UserProfile = () => {
   )
 }
 
-export default withRouter(UserProfile)
+export default withRouter(UserProfile);

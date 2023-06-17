@@ -26,10 +26,5 @@ const Frontcms = props => {
   )
 }
 
-Frontcms.propTypes = {
-  t: PropTypes.any,
-  chartsData: PropTypes.any,
-  onGetChartsData: PropTypes.func,
-}
 
 export default withTranslation()(Frontcms)

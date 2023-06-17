@@ -1,39 +1,44 @@
-import PropTypes from "prop-types"
 import React, { useEffect } from "react"
-import { Container } from "reactstrap"
-import { AgGridReact } from "ag-grid-react"
+import { Button, Container } from "reactstrap"
+import { AgGridReact, AgGridColumn } from "ag-grid-react"
 import "ag-grid-community/styles/ag-grid.css"
 import "ag-grid-community/styles/ag-theme-alpine.css"
-import { useMemo, useState } from "react"
+import { useMemo, useState, useCallback, useRef } from "react"
 import AlertDialog from "./Dialog/Dialog"
 import api from "services/Api"
-
 //Import Breadcrumb
 import Breadcrumbs from "../../components/Common/Breadcrumb"
-
-//i18n
 import { withTranslation } from "react-i18next"
+import "ag-grid-enterprise"
+import { Link } from "react-router-dom"
 
 //redux
 
 const initialValue = {
   //reset the form to initial value
-  name: "",
-  age: "",
+  patient_name: "",
   gender: "",
-  contact: "",
+  mobileno: "",
   bloodgroup: "",
   Appointmentno: "",
   Appointmentdate: "",
   priority: "",
+  source: "",
+  live: "",
+  fees: "",
+  status: ""
 }
 
 const Appointment = props => {
+  const gridRef = useRef()
+
   const [tableData, setTableData] = useState(null)
 
   const [formData, setFormData] = useState(initialValue)
 
   const [open, setOpen] = React.useState(false)
+
+  const [datas,setDatas] = useState(null)
 
   const handleClickOpen = () => {
     //dialog open
@@ -50,16 +55,39 @@ const Appointment = props => {
     const { value, id } = e.target
     setFormData({ ...formData, [id]: value })
   }
-  
+
   const columnDefs = [
-    { headerName: "Name", field: "name" , filter: 'agSetColumnFilter'},
-    { headerName: "Age", field: "age" },
+    { headerName: "Patient Name", field: "patient_name", filter: "agSetColumnFilter" },
+    {
+      headerName: "Appointment No",
+      field: "id",
+      cellStyle: {
+        color: "blue",
+        fontWeight: "500",
+        backgroundColor: "#D6E4E5",
+      },
+    },
+    { headerName: "Appointment Date", field: "date" },
     { headerName: "Gender", field: "gender" },
-    { headerName: "Contact", field: "contact" },
-    { headerName: "Blood group", field: "bloodgroup" },
-    { headerName: "Appt. No.", field: "Appointmentno" },
-    { headerName: "Appt. Date", field: "Appointmentdate" },
+    { headerName: "Phone", field: "mobileno" },
     { headerName: "Priority", field: "priority" },
+    { headerName: "Live Consultant", field: "live_consult" },
+    { headerName: "Fees", field: "amount" },
+    { headerName: "Status", field: "appointment_status" },
+    {
+      headerName: "Actions",
+      field: "id",
+      cellRendererFramework: params => (
+        <div>
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={() => handleDelete(params.value)}
+          >
+            <i className="fas fa-trash"></i>
+          </button>
+        </div>
+      ),
+    },
   ]
 
   const defaultColDef = useMemo(
@@ -71,50 +99,106 @@ const Appointment = props => {
     []
   )
 
-  useEffect(() => {
-    // getUsers from json
-    getUsers()
+  // useEffect(() => {
+  //   // getUsers from json
+  //   getUsers()
+  // }, [])
+
+  // const getUsers = () => {
+  //   api.getUser().then(res => setTableData(res.data))
+  //   api.http
+  // }
+
+  // function handleFormSubmit() {
+  //   //for posting and getting data at a sametime
+  //   api.postUser(formData).then(resp => {
+  //     console.log(resp)
+  //   })
+  //   handleClose()
+
+  //   api
+  //     .getPatient({ headers: { "content-type": "application/json" } })
+  //     .then(resp => {
+  //       getUsers()
+  //       setFormData(initialValue)
+  //       preventDefault()
+  //     })
+  // }
+
+  // const onGridReady = useCallback(params => {
+  //   api
+  //     .getUser()
+  //     .then(resp => resp.data())
+  //     .then(data => {
+  //       setRowData(data)
+  //     })
+  // }, [])
+
+  const onBtnExport = useCallback(() => {
+    gridRef.current.api.exportDataAsExcel()
   }, [])
-
-  const getUsers = () => {
-    api.getUser().then(res => setTableData(res.data))
-    api.http
+useEffect(()=>{
+  getAppointment()
+},[])
+  const getAppointment = async () =>{
+    const response = await api.getAppointment()
+    const {data} = response
+    console.log(data, 'dddddd')
+    setDatas(data)
   }
 
-  function handleFormSubmit() {
-    //for posting and getting data at a sametime
-    api.postUser(formData).then(resp => {
-      console.log(resp)
-    })
-    handleClose()
-
-    api
-      .getUser({ headers: { "content-type": "application/json" } })
-      .then(resp => {
-        getUsers()
-        setFormData(initialValue)
-        preventDefault()
-      })
-  }
-
-  
-  
-
+  console.log(datas, 'dataaaaaaa')
   return (
     <React.Fragment>
       <div className="page-content">
         <Container fluid>
-          {/* Render Breadcrumb */}
           <Breadcrumbs
             title={props.t("Appointment")}
             breadcrumbItem={props.t("Appointment")}
           />
-          <button className="btn btn-primary bg-soft" onClick={handleClickOpen}>
-            Add Patient
-          </button>
-          {/* <button className="btn btn-primary bg-soft" style={{marginLeft: "10px"}}>   //button for handleDisplay function
-            Refresh
-          </button> */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "flex-end",
+              justifyContent: "flex-end",
+            }}
+          >
+            <button
+              className="btn btn-primary bg-soft"
+              onClick={handleClickOpen}
+              style={{ marginRight: "15px" }}
+            >
+              + Add Appointment
+            </button>
+            <Link to='/doctorwise'>
+            <button
+              className="btn btn-primary bg-soft"
+              style={{ marginRight: "15px" }}
+            >
+            <i className="fas fa-align-justify"></i>
+              &nbsp;&nbsp;Doctor Wise
+            </button>
+            </Link>
+           <Link to='/patientqueue'>
+           <button
+              className="btn btn-primary bg-soft"
+              style={{ marginRight: "15px" }}
+            >
+              <i className="fas fa-align-center"></i>&nbsp;&nbsp;Queue
+            </button>
+           </Link>
+           
+            <button
+              className="btn btn-outline-primary"
+              onClick={() => onBtnExport()}
+            >
+              <i
+                className="far fa-file-excel fa-md"
+                style={{ paddingRight: "6px" }}
+              ></i>
+              Export
+            </button>
+          </div>
         </Container>
 
         <div
@@ -122,22 +206,21 @@ const Appointment = props => {
           style={{ height: 500, marginTop: "20px" }}
         >
           <AgGridReact
-            rowData={tableData}
+            ref={gridRef}
+            rowData={datas}
             columnDefs={columnDefs}
             defaultColDef={defaultColDef}
+            // onGridReady={onGridReady}
           />
           <AlertDialog
             open={open}
             handleClose={handleClose}
-            data={formData}
-            onChange={onChange}
-            handleFormSubmit={handleFormSubmit}
+            data={formData} 
           />
         </div>
       </div>
     </React.Fragment>
   )
 }
-
 
 export default withTranslation()(Appointment)

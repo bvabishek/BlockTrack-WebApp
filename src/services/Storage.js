@@ -6,10 +6,10 @@ function storeTokens(accessToken,refreshToken){
 }
 
 function removeSession(){
-    sessionStorage.clear()
+    sessionStorage.clear();
 }
 
-const storage = {storeTokens, removeSession}
+const storage = {storeTokens, removeSession};
 
 export default storage;
 

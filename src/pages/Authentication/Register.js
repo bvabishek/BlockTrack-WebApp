@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState } from "react";
 
 import {
   Row,
@@ -14,27 +14,27 @@ import {
   TabContent,
   NavItem,
   NavLink,
-} from "reactstrap"
+} from "reactstrap";
 
-import * as Yup from "yup"
-import { useFormik } from "formik"
+import * as Yup from "yup";
+import { useFormik } from "formik";
 
-import classnames from "classnames"
+import classnames from "classnames";
 
-import { Link } from "react-router-dom"
+import { Link } from "react-router-dom";
 
-import { DatePicker } from "antd"
+import { DatePicker } from "antd";
 
-import api from "services/Api"
+import api from "services/Api";
 
-import Select from "react-select"
+import Select from "react-select";
 
 const Register = () => {
   //meta title
   document.title = "Register | BlockTrack"
 
-  const [activeTab, setactiveTab] = useState(1)
-  const [passedSteps, setPassedSteps] = useState([1]) //tabs management
+  const [activeTab, setactiveTab] = useState(1);
+  const [passedSteps, setPassedSteps] = useState([1]); //tabs management
 
   function toggleTab(tab) {
     if (activeTab !== tab) {
@@ -44,7 +44,7 @@ const Register = () => {
         setPassedSteps(modifiedSteps)
       }
     }
-  }
+  };
 
   const validation = useFormik({
     enableReinitialize: false,
@@ -78,7 +78,7 @@ const Register = () => {
     onSubmit: values => {
       console.log("values", values)
     },
-  })
+  });
 
   const validationType = useFormik({
     enableReinitialize: true,
@@ -105,7 +105,7 @@ const Register = () => {
     onSubmit: values => {
       console.log("values", values)
     },
-  })
+  });
 
   const rangeValidation = useFormik({
     enableReinitialize: true,
@@ -121,7 +121,7 @@ const Register = () => {
     onSubmit: values => {
       console.log("values", values)
     },
-  })
+  });
 
   function postSignupUser() {
     api.postSignup({
@@ -137,7 +137,7 @@ const Register = () => {
       city,
       zip,
     })
-  }
+  };
 
   const optionGroup = [
     {
@@ -148,7 +148,7 @@ const Register = () => {
         { label: "Transgender", value: "transgender" },
       ],
     },
-  ]
+  ];
 
   const optionGroupId = [
     {
@@ -161,7 +161,7 @@ const Register = () => {
         { label: "Driving Licence", value: "drivinglicence" },
       ],
     },
-  ]
+  ];
 
   const optionGroupBlood = [
     {
@@ -177,7 +177,7 @@ const Register = () => {
         { label: "AB -ve", value: "AB -ve" },
       ],
     },
-  ]
+  ];
 
   return (
     <React.Fragment>
@@ -488,7 +488,7 @@ const Register = () => {
                       <Row>
                         <Col lg="6">
                           <div className="mt-3">
-                            <Label for="gender">Government ID</Label>
+                            <Label for="govtid">Government ID</Label>
                             <Select options={optionGroupId} />
                           </div>
                         </Col>
@@ -566,4 +566,4 @@ const Register = () => {
   )
 }
 
-export default Register
+export default Register;
